@@ -1,0 +1,13 @@
+package com.vandesh.tripplanner.trip_planner_api.dto;
+
+import java.time.LocalDate;
+
+import lombok.Data;
+
+@Data
+public class TripResponse {
+  private Long tripId;
+  private String tripName;
+  private LocalDate startDate;
+  private LocalDate endDate;
+}
