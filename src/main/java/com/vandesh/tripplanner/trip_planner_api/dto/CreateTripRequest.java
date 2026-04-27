@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 public class CreateTripRequest {
   private String tripName;
+  private String destination;
   private LocalDate startDate;
   private LocalDate endDate;
   private Long userId;

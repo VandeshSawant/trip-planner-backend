@@ -28,6 +28,8 @@ public class Trip {
 
   private String tripName;
 
+  private String destination;
+
   private LocalDate startDate;
   private LocalDate endDate;
 

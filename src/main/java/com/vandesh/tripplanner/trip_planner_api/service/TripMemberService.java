@@ -57,6 +57,7 @@ public class TripMemberService {
       TripResponse response = new TripResponse();
       response.setTripId(member.getTrip().getId());
       response.setTripName(member.getTrip().getTripName());
+      response.setDestination(member.getTrip().getDestination());
       response.setStartDate(member.getTrip().getStartDate());
       response.setEndDate(member.getTrip().getEndDate());
       return response;

@@ -8,6 +8,7 @@ import lombok.Data;
 public class TripResponse {
   private Long tripId;
   private String tripName;
+  private String destination;
   private LocalDate startDate;
   private LocalDate endDate;
 }

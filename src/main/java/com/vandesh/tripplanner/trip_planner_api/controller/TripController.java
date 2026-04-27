@@ -43,6 +43,7 @@ public class TripController {
     public Trip createTrip(@RequestBody CreateTripRequest request) {
         Trip trip = new Trip();
         trip.setTripName(request.getTripName());
+        trip.setDestination(request.getDestination());
         trip.setStartDate(request.getStartDate());
         trip.setEndDate(request.getEndDate());
         return tripService.createTrip(trip, request.getUserId());
