@@ -2,6 +2,7 @@ package com.vandesh.tripplanner.trip_planner_api.service;
 
 import java.util.List;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.vandesh.tripplanner.trip_planner_api.dto.CreateItineraryRequest;
@@ -52,5 +53,46 @@ public class ItineraryService {
       throw new IllegalArgumentException("Trip not found");
     }
     return itineraryRepository.findByTripIdOrderByDateAsc(tripId);
+  }
+
+  public Itinerary updateItinerary(Long tripId, Long itineraryId, Long userId, CreateItineraryRequest request) {
+    Trip trip = tripRepository.findById(tripId)
+        .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
+
+    Itinerary itinerary = itineraryRepository.findById(itineraryId)
+        .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+
+    if (trip.getCreatedBy().getId().equals(userId)) {
+      if (request.getTitle() != null && !request.getTitle().isBlank()) {
+        itinerary.setTitle(request.getTitle());
+      }
+      if (request.getDescription() != null) {
+        itinerary.setDescription(request.getDescription());
+      }
+      if (request.getDate() != null) {
+        if (request.getDate().isBefore(trip.getStartDate()) ||
+            request.getDate().isAfter(trip.getEndDate())) {
+          throw new IllegalArgumentException("Date must be within trip duration");
+        }
+        itinerary.setDate(request.getDate());
+      }
+      return itineraryRepository.save(itinerary);
+    } else {
+      throw new IllegalArgumentException("Only trip creator can update itinerary");
+    }
+  }
+
+  public void deleteItinerary(Long tripId, Long itineraryId, Long userId) {
+    Trip trip = tripRepository.findById(tripId)
+        .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
+
+    Itinerary itinerary = itineraryRepository.findById(itineraryId)
+        .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+
+    if (trip.getCreatedBy().getId().equals(userId)) {
+      itineraryRepository.delete(itinerary);
+    } else {
+      throw new IllegalArgumentException("Only trip creator can delete itinerary");
+    }
   }
 }

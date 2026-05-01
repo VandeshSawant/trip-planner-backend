@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.vandesh.tripplanner.trip_planner_api.dto.CreateItineraryRequest;
 import com.vandesh.tripplanner.trip_planner_api.dto.CreateTripRequest;
 import com.vandesh.tripplanner.trip_planner_api.dto.ItineraryResponse;
-import com.vandesh.tripplanner.trip_planner_api.dto.JoinTripRequest;
-import com.vandesh.tripplanner.trip_planner_api.dto.LeaveTripRequest;
 import com.vandesh.tripplanner.trip_planner_api.dto.TripMemberResponse;
 import com.vandesh.tripplanner.trip_planner_api.entity.Itinerary;
 import com.vandesh.tripplanner.trip_planner_api.entity.Trip;
@@ -21,8 +19,10 @@ import com.vandesh.tripplanner.trip_planner_api.service.TripService;
 
 import java.util.List;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("/trips")
@@ -39,6 +39,22 @@ public class TripController {
         this.itineraryService = itineraryService;
     }
 
+    private Long getCurrentUserId() {
+        return (Long) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+    }
+
+    @GetMapping
+    public List<Trip> getTrips() {
+        return tripService.getTrips();
+    }
+
+    @GetMapping("/{tripId}")
+    public Trip getTrip(@PathVariable Long tripId) {
+        return tripService.getTripByID(tripId);
+    }
+
     @PostMapping
     public Trip createTrip(@RequestBody CreateTripRequest request) {
         Trip trip = new Trip();
@@ -46,14 +62,15 @@ public class TripController {
         trip.setDestination(request.getDestination());
         trip.setStartDate(request.getStartDate());
         trip.setEndDate(request.getEndDate());
-        return tripService.createTrip(trip, request.getUserId());
+        Trip createdTrip = tripService.createTrip(trip, getCurrentUserId());
+        tripMemberService.joinTrip(createdTrip.getId(), getCurrentUserId());
+        return createdTrip;
     }
 
     @PostMapping("/{tripId}/join")
     public TripMember joinTrip(
-            @PathVariable Long tripId,
-            @RequestBody JoinTripRequest request) {
-        return tripMemberService.joinTrip(tripId, request.getUserId());
+            @PathVariable Long tripId) {
+        return tripMemberService.joinTrip(tripId, getCurrentUserId());
     }
 
     @GetMapping("/{tripId}/members")
@@ -63,9 +80,8 @@ public class TripController {
 
     @DeleteMapping("/{tripId}/leave")
     public void leaveTrip(
-            @PathVariable Long tripId,
-            @RequestBody LeaveTripRequest request) {
-        tripMemberService.leaveTrip(tripId, request.getUserId());
+            @PathVariable Long tripId) {
+        tripMemberService.leaveTrip(tripId, getCurrentUserId());
     }
 
     @PostMapping("/{tripId}/itinerary")
@@ -92,4 +108,20 @@ public class TripController {
         }).toList();
     }
 
+    @PutMapping("/{tripId}/itinerary/{itineraryId}")
+    public ItineraryResponse putMethodName(@PathVariable Long tripId, @PathVariable Long itineraryId,
+            @RequestBody CreateItineraryRequest request) {
+        Itinerary itinerary = itineraryService.updateItinerary(tripId, itineraryId, getCurrentUserId(), request);
+        ItineraryResponse response = new ItineraryResponse();
+        response.setId(itinerary.getId());
+        response.setTitle(itinerary.getTitle());
+        response.setDescription(itinerary.getDescription());
+        response.setDate(itinerary.getDate().toString());
+        return response;
+    }
+
+    @DeleteMapping("/{tripId}/itinerary/{itineraryId}")
+    public void deleteItinerary(@PathVariable Long tripId, @PathVariable Long itineraryId) {
+        itineraryService.deleteItinerary(tripId, itineraryId, getCurrentUserId());
+    }
 }

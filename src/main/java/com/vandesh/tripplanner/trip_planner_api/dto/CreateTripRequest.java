@@ -10,5 +10,4 @@ public class CreateTripRequest {
   private String destination;
   private LocalDate startDate;
   private LocalDate endDate;
-  private Long userId;
 }

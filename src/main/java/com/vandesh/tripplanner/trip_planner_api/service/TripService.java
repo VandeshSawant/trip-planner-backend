@@ -1,5 +1,7 @@
 package com.vandesh.tripplanner.trip_planner_api.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.vandesh.tripplanner.trip_planner_api.entity.Trip;
@@ -21,5 +23,13 @@ public class TripService {
     User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
     trip.setCreatedBy(user);
     return tripRepository.save(trip);
+  }
+
+  public List<Trip> getTrips() {
+    return tripRepository.findAll();
+  }
+
+  public Trip getTripByID(Long tripId) {
+    return tripRepository.findById(tripId).orElseThrow(() -> new IllegalArgumentException("Trip not found"));
   }
 }
