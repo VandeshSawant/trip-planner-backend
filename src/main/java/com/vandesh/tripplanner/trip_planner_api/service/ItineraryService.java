@@ -2,8 +2,10 @@ package com.vandesh.tripplanner.trip_planner_api.service;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.vandesh.tripplanner.trip_planner_api.dto.CreateItineraryRequest;
 import com.vandesh.tripplanner.trip_planner_api.entity.Itinerary;
@@ -62,6 +64,11 @@ public class ItineraryService {
     Itinerary itinerary = itineraryRepository.findById(itineraryId)
         .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
 
+    if (!itinerary.getTrip().getId().equals(tripId)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Itinerary item does not belong to this trip");
+    }
+
     if (trip.getCreatedBy().getId().equals(userId)) {
       if (request.getTitle() != null && !request.getTitle().isBlank()) {
         itinerary.setTitle(request.getTitle());
@@ -72,13 +79,13 @@ public class ItineraryService {
       if (request.getDate() != null) {
         if (request.getDate().isBefore(trip.getStartDate()) ||
             request.getDate().isAfter(trip.getEndDate())) {
-          throw new IllegalArgumentException("Date must be within trip duration");
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date must be within trip duration");
         }
         itinerary.setDate(request.getDate());
       }
       return itineraryRepository.save(itinerary);
     } else {
-      throw new IllegalArgumentException("Only trip creator can update itinerary");
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only trip creator can update itinerary");
     }
   }
 
@@ -89,10 +96,15 @@ public class ItineraryService {
     Itinerary itinerary = itineraryRepository.findById(itineraryId)
         .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
 
+    if (!itinerary.getTrip().getId().equals(tripId)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Itinerary item does not belong to this trip");
+    }
+
     if (trip.getCreatedBy().getId().equals(userId)) {
       itineraryRepository.delete(itinerary);
     } else {
-      throw new IllegalArgumentException("Only trip creator can delete itinerary");
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only trip creator can delete itinerary");
     }
   }
 }

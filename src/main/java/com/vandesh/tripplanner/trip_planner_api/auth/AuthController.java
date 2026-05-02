@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.vandesh.tripplanner.trip_planner_api.entity.User;
+import com.vandesh.tripplanner.trip_planner_api.exception.InvalidCredentialsException;
 import com.vandesh.tripplanner.trip_planner_api.repository.UserRepository;
 
 @RestController
@@ -28,11 +29,11 @@ public class AuthController {
   public ResponseEntity<?> login(@RequestBody AuthRequest request) {
     // Find user by email
     User user = userRepository.findByEmail(request.getEmail())
-        .orElseThrow(() -> new RuntimeException("User not found"));
+        .orElseThrow(() -> new InvalidCredentialsException());
 
     // Check password — plain text for now, we'll add hashing next
     if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-      return ResponseEntity.status(401).body("Invalid credentials");
+      throw new InvalidCredentialsException();
     }
 
     // Generate and return the token

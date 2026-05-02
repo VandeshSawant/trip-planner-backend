@@ -22,6 +22,9 @@ public class TripService {
   public Trip createTrip(Trip trip, Long userId) {
     User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
     trip.setCreatedBy(user);
+    if (trip.getEndDate().isBefore(trip.getStartDate())) {
+      throw new IllegalArgumentException("End date cannot be before start date");
+    }
     return tripRepository.save(trip);
   }
 

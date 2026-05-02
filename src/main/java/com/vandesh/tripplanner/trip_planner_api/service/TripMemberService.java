@@ -2,8 +2,10 @@ package com.vandesh.tripplanner.trip_planner_api.service;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.vandesh.tripplanner.trip_planner_api.dto.TripMemberResponse;
 import com.vandesh.tripplanner.trip_planner_api.dto.TripResponse;
@@ -32,7 +34,7 @@ public class TripMemberService {
     User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
 
     if (tripMemberRepository.existsByTripIdAndUserId(tripId, userId)) {
-      throw new IllegalArgumentException("User already joined this trip");
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "User already joined this trip");
     }
     TripMember tripMember = new TripMember();
     tripMember.setTrip(trip);
@@ -41,6 +43,9 @@ public class TripMemberService {
   }
 
   public List<TripMemberResponse> getMembers(Long tripId) {
+    if (!tripRepository.existsById(tripId)) {
+      throw new IllegalArgumentException("Trip not found");
+    }
     List<TripMember> members = tripMemberRepository.findByTripId(tripId);
     return members.stream().map(member -> {
       TripMemberResponse response = new TripMemberResponse();
@@ -52,6 +57,9 @@ public class TripMemberService {
   }
 
   public List<TripResponse> getTrips(Long userId) {
+    if (!userRepository.existsById(userId)) {
+      throw new IllegalArgumentException("User not found");
+    }
     List<TripMember> members = tripMemberRepository.findByUserId(userId);
     return members.stream().map(member -> {
       TripResponse response = new TripResponse();
