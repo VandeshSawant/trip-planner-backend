@@ -3,7 +3,7 @@ package com.vandesh.tripplanner.trip_planner_api.service;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
